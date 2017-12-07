@@ -60,14 +60,8 @@ if [ "$INSTALL" = 1 ] ; then
     chmod -x "$JAVI_PATH/javi"
 
     echo "Javi has been configured"
-
-    exit 0
   fi
-fi
-
-## Main body
-
-if [ -z "${name}" ]; then
+elif [ -z "${name}" ]; then
   echo "Please give a name to your project"
 elif [[ -d ${path} ]]; then
   echo "Creating project in ${path}"
