@@ -1,0 +1,80 @@
+#!/bin/sh
+
+JAVI_PATH="$HOME/.javi"
+
+name=${1}
+path=${2}
+rest=${@:3}
+
+### Funcs
+get_files() {
+  cd ${name}/assets
+
+  echo "Installing extra dependencies"
+  npm install --save jquery sass-brunch foundation-sites normalize-scss
+
+  echo "Getting files to replace"
+
+  get_brunch
+  get_scss
+
+  cd ../..
+
+  echo "Got and replaced files on 'assets' folder"
+
+  # Replaces content from 'app.html.eex' file
+  get_apphtml
+}
+
+get_brunch() {
+  rm -rf brunch-config.js && \
+  wget https://raw.githubusercontent.com/aguxez/javi/master/brunch-config.js
+}
+
+get_scss() {
+  cd css && \
+  rm -rf app.css phoenix.css && \
+  wget https://raw.githubusercontent.com/aguxez/javi/master/app.scss
+}
+
+get_apphtml() {
+  cd lib/${name}_web/templates/layout && \
+  rm -rf app.html.eex && \
+  wget https://raw.githubusercontent.com/aguxez/javi/master/app.html.eex
+
+  # Here we replace the title with the 'name' variable
+  uppercased_name=`sed -e "s/\b\(.\)/\u\1/g" <<< "${name}"`
+  eval sed -i -e 's/CHANGE_TITLE/${uppercased_name}/g' app.html.eex
+}
+
+## If installing
+INSTALL=0
+if [ "$1" = "install" ] ; then
+  INSTALL=1
+fi
+
+if [ "$INSTALL" = 1 ] ; then
+  if [ ! -d "$JAVI_PATH" ] ; then
+    mkdir "$JAVI_PATH" && \
+    curl -sSL -o "$JAVI_PATH" https://raw.githubusercontent.com/aguxez/javi/master/javi && \
+    chmod -x "$JAVI_PATH/javi"
+
+    echo "Javi has been configured"
+  fi
+fi
+
+## Main body
+
+if [ -z "${name}" ]; then
+  echo "Please give a name to your project"
+elif [[ -d ${path} ]]; then
+  echo "Creating project in ${path}"
+  cd ${path}
+  mix phx.new ${name} ${rest}
+  # Runs function
+  get_files
+else
+  mix phx.new ${name} ${rest}
+  # Function
+  get_files
+fi

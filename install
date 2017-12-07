@@ -1,0 +1,5 @@
+#!/bin/sh
+
+\curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/javi | bash -s install
+
+exit 0
