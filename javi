@@ -55,9 +55,9 @@ fi
 
 if [ "$INSTALL" = 1 ] ; then
   if [ ! -d "$JAVI_PATH" ] ; then
-    mkdir "$JAVI_PATH" && \
-    curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/javi > "$JAVI_PATH/javi" && \
-    chmod -x "$JAVI_PATH/javi"
+    mkdir $JAVI_PATH && \
+    curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/javi > $JAVI_PATH/javi && \
+    chmod -x $JAVI_PATH/javi
 
     echo "Javi has been configured"
   fi
