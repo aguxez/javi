@@ -60,6 +60,8 @@ if [ "$INSTALL" = 1 ] ; then
     chmod -x "$JAVI_PATH/javi"
 
     echo "Javi has been configured"
+
+    exit 0
   fi
 fi
 
