@@ -7,6 +7,17 @@ path=${2}
 rest=${@:3}
 
 ### Funcs
+
+# This function checks if any of the parameters given are either
+# '--no-brunch' or '--no-html', in this case, the process is cancelled.
+check_arguments() {
+  if [ "$@" == "--no-brunch" ] || [ "$@" == "--no-html " ] ; then
+    echo "You passed '--no-brunch' or '--no-html' as options, cancelling"
+
+    exit 1
+  fi
+}
+
 get_files() {
   cd ${name}/assets
 
@@ -47,30 +58,52 @@ get_apphtml() {
   eval sed -i -e 's/CHANGE_TITLE/${uppercased_name}/g' app.html.eex
 }
 
-## If installing
+# Help
+usage() {
+  printf "%b" "\n"
+  echo "Javi commands:"
+  printf "%b" "update         - Updates the to the last Javi commit\n\n"
+
+  echo "Usage:"
+  printf "%b" "javi <project name> <path> <phoenix options (--no-ecto, --no-html, etc)\n"
+  printf "%b" "javi <project name> <phoenix options (--no-ecto, --no-html, etc)\n"
+}
+
+## If installing or updating
 INSTALL=0
+if [ "$1" = "update" ] ; then
+  INSTALL=1
+fi
+
 if [ "$1" = "install" ] ; then
   INSTALL=1
 fi
 
 if [ "$INSTALL" = 1 ] ; then
-  if [ ! -d "$JAVI_PATH" ] ; then
-    mkdir $JAVI_PATH && \
-    curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/javi > $JAVI_PATH/javi && \
-    chmod +x $JAVI_PATH/javi
+  mkdir -p $JAVI_PATH
+  curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/javi > $JAVI_PATH/javi && \
+  chmod +x $JAVI_PATH/javi
 
-    echo "Javi has been configured"
-  fi
+  echo "Javi has been configured"
 elif [ -z "${name}" ]; then
   echo "Please give a name to your project"
+
+  usage
 elif [[ -d ${path} ]]; then
-  echo "Creating project in ${path}"
-  cd ${path}
+  check_arguments ${rest}
+
+  echo "Creating project in ${path}/${name}"
+
+  mkdir ${path}/${name} && \
+  cd ${path}/${name} && \
   mix phx.new ${name} ${rest}
-  # Runs function
+  # Function
   get_files
 else
-  mix phx.new ${name} ${rest}
+  check_arguments ${@:2} && \
+  # If this 'else' then it means that a path wasn't given
+  # arguments starting at the '2' place are the ones passed to Phoenix's options
+  mix phx.new ${name} ${@:2}
   # Function
   get_files
 fi
