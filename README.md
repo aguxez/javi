@@ -15,7 +15,10 @@
 Then add it to your PATH
 
 ## Usage
-`javi <project_name> <phoenix options (--no-ecto --no-brunch, etc)>`
+```sh
+javi <project_name> <path> <phoenix options (--no-ecto --no-brunch, etc)>
+javi <project_name> <phoenix options (--no-ecto --no-brunch, etc)>
+```
 
 ### TODO
 - [ ] Configures PATH based on shell.
