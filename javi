@@ -2,17 +2,17 @@
 
 JAVI_PATH="$HOME/.javi"
 
-name="${1}"
-path="${2}"
-rest=( "${@:3}" )
+phoenix_opts=()
+react="0"
+INSTALL="0"
 
 ### Funcs
 
 # This function checks if any of the parameters given are either
 # '--no-brunch' or '--no-html', in this case, the process is cancelled.
 check_arguments() {
-  if [[ "${@}" == "--no-brunch" ]] || [[ "${@}" == "--no-html " ]] ; then
-    echo "You passed '--no-brunch' or '--no-html' as options, cancelling"
+  if [[ "${@}" == "--no-brunch" ]] || [[ "${@}" == "--no-html" ]] ; then
+    err "You passed '--no-brunch' or '--no-html' as options, aborting"
 
     exit 1
   fi
@@ -22,7 +22,7 @@ get_files() {
   cd "${name}/assets"
 
   echo "Installing extra dependencies"
-  npm install --save jquery sass-brunch foundation-sites normalize-scss
+  yarn add jquery sass-brunch foundation-sites normalize-scss --save
 
   echo "Getting files to replace"
 
@@ -58,52 +58,105 @@ get_apphtml() {
   sed -i -e 's/CHANGE_TITLE/'"${uppercased_name}"'/g' app.html.eex
 }
 
-# Help
+get_react() {
+  printf "%b" "Building project with last version of React"
+  printf "%b" "Javi will install additional npm dependencies but you have to \n"
+  printf "%b" "Install react_phoenix manually or if you want to use it differently\n\n"
+
+  warn "Remember to add the presets on your brunch-config.js file"
+
+
+  cd assets && \
+  yarn add react babel-preset-env babel-preset-react --save && \
+  cd ../
+}
+
+# Helpers
 usage() {
   printf "%b" "\n"
   echo "Javi commands:"
   printf "%b" "update         - Updates the to the last Javi commit\n\n"
 
-  echo "Usage:"
-  printf "%b" "javi <project name> <path> <phoenix options (--no-ecto, --no-html, etc)\n"
-  printf "%b" "javi <project name> <phoenix options (--no-ecto, --no-html, etc)\n"
+  printf "%b" "-n (name)      - Gives a name to the project\n"
+  printf "%b" "-p (path)      - Specifies a path for the project, otherwise use current folder\n"
+  printf "%b" "-r (react)     - Install some dependencies to use React (Including React itself)\n"
+  printf "%b" "-e/b/h (opts)  - Phoenix options (--no-ecto, --no-brunch, --no-html)\n"
 }
 
+warn() {
+  printf '\e[1;33m[WARNING]\e[0m %s\n' "${@}" >&2;
+}
+
+err() {
+  printf '\e[1;31m[ERROR]\e[0m %s\n' "${@}" >&2;
+}
+
+# getopts
+while getopts ":n:p:rebh" opt ; do
+  case "${opt}" in
+    n)
+      name="${OPTARG}"
+      ;;
+    p)
+      path="${OPTARG}"
+      ;;
+    r)
+      react="1"
+      ;;
+    e)
+      phoenix_opts+=("--no-ecto")
+      ;;
+    b)
+      phoenix_opts+=("--no-brunch")
+      ;;
+    h)
+      phoenix_opts+=("--no-html")
+      ;;
+    \?)
+      ;;
+  esac
+done
+
 ## If installing or updating
-INSTALL="0"
-if [[ "${1}" = "update" ]] ; then
+if [[ "$1" = "update" ]] ; then
   INSTALL="1"
 fi
 
-if [[ "${1}" = "install" ]] ; then
+if [[ "$1" = "install" ]] ; then
   INSTALL="1"
 fi
 
-if [[ "${INSTALL}" = 1 ]] ; then
+if [[ "${INSTALL}" = "1" ]] ; then
   mkdir -p "${JAVI_PATH}"
   curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/javi > "${JAVI_PATH}/javi" && \
   chmod +x "${JAVI_PATH}/javi"
 
   echo "Javi has been configured"
 elif [[ -z "${name}" ]] ; then
-  echo "Please give a name to your project"
+  err "Please give a name to your project"
 
   usage
 elif [[ -d "${path}" ]] ; then
-  check_arguments "${rest}"
+  check_arguments "${phoenix_opts}"
 
   echo "Creating project in ${path}/${name}"
 
   mkdir "${path}/${name}" && \
   cd "${path}/${name}" && \
-  mix phx.new "${name}" "${rest[@]}"
+  mix phx.new "${name}" "${phoenix_opts[@]}"
   # Function
   get_files
 else
-  check_arguments "${@:2}" && \
+  check_arguments "${phoenix_opts}" && \
   # If this 'else' then it means that a path wasn't given
   # arguments starting at the '2' place are the ones passed to Phoenix's options
-  mix phx.new "${name}" "${@:2}"
+  mix phx.new "${name}" "${phoenix_opts}"
   # Function
   get_files
+fi
+
+# Just for React
+# TODO: Find a better way of handling these inputs
+if [ "${react}" == "1" ] ; then
+  get_react
 fi
