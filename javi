@@ -2,16 +2,16 @@
 
 JAVI_PATH="$HOME/.javi"
 
-name=${1}
-path=${2}
-rest=${@:3}
+name="${1}"
+path="${2}"
+rest=( "${@:3}" )
 
 ### Funcs
 
 # This function checks if any of the parameters given are either
 # '--no-brunch' or '--no-html', in this case, the process is cancelled.
 check_arguments() {
-  if [ "$@" == "--no-brunch" ] || [ "$@" == "--no-html " ] ; then
+  if [[ "${@}" == "--no-brunch" ]] || [[ "${@}" == "--no-html " ]] ; then
     echo "You passed '--no-brunch' or '--no-html' as options, cancelling"
 
     exit 1
@@ -19,7 +19,7 @@ check_arguments() {
 }
 
 get_files() {
-  cd ${name}/assets
+  cd "${name}/assets"
 
   echo "Installing extra dependencies"
   npm install --save jquery sass-brunch foundation-sites normalize-scss
@@ -49,13 +49,13 @@ get_scss() {
 }
 
 get_apphtml() {
-  cd lib/${name}_web/templates/layout && \
+  cd "lib/${name}_web/templates/layout" && \
   rm -rf app.html.eex && \
   wget https://raw.githubusercontent.com/aguxez/javi/master/app.html.eex
 
   # Here we replace the title with the 'name' variable
-  uppercased_name=`sed -e "s/\b\(.\)/\u\1/g" <<< "${name}"`
-  eval sed -i -e 's/CHANGE_TITLE/${uppercased_name}/g' app.html.eex
+  uppercased_name=`sed -e 's/\b\(.\)/\u\1/g' <<< "${name}"`
+  sed -i -e 's/CHANGE_TITLE/'"${uppercased_name}"'/g' app.html.eex
 }
 
 # Help
@@ -70,40 +70,40 @@ usage() {
 }
 
 ## If installing or updating
-INSTALL=0
-if [ "$1" = "update" ] ; then
-  INSTALL=1
+INSTALL="0"
+if [[ "${1}" = "update" ]] ; then
+  INSTALL="1"
 fi
 
-if [ "$1" = "install" ] ; then
-  INSTALL=1
+if [[ "${1}" = "install" ]] ; then
+  INSTALL="1"
 fi
 
-if [ "$INSTALL" = 1 ] ; then
-  mkdir -p $JAVI_PATH
-  curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/javi > $JAVI_PATH/javi && \
-  chmod +x $JAVI_PATH/javi
+if [[ "${INSTALL}" = 1 ]] ; then
+  mkdir -p "${JAVI_PATH}"
+  curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/javi > "${JAVI_PATH}/javi" && \
+  chmod +x "${JAVI_PATH}/javi"
 
   echo "Javi has been configured"
-elif [ -z "${name}" ]; then
+elif [[ -z "${name}" ]] ; then
   echo "Please give a name to your project"
 
   usage
-elif [[ -d ${path} ]]; then
-  check_arguments ${rest}
+elif [[ -d "${path}" ]] ; then
+  check_arguments "${rest}"
 
   echo "Creating project in ${path}/${name}"
 
-  mkdir ${path}/${name} && \
-  cd ${path}/${name} && \
-  mix phx.new ${name} ${rest}
+  mkdir "${path}/${name}" && \
+  cd "${path}/${name}" && \
+  mix phx.new "${name}" "${rest[@]}"
   # Function
   get_files
 else
-  check_arguments ${@:2} && \
+  check_arguments "${@:2}" && \
   # If this 'else' then it means that a path wasn't given
   # arguments starting at the '2' place are the ones passed to Phoenix's options
-  mix phx.new ${name} ${@:2}
+  mix phx.new "${name}" "${@:2}"
   # Function
   get_files
 fi
