@@ -14,10 +14,17 @@
 
 Then add it to your PATH
 
-## Usage
+## Options / Flags
 ```sh
-javi <project_name> <path> <phoenix options (--no-ecto --no-brunch, etc)>
-javi <project_name> <phoenix options (--no-ecto --no-brunch, etc)>
+-n (name)
+-p (path)
+-r (React)
+-e/b/h (Phoenix options) --no-ecto, --no-brunch, --no-html
+```
+
+## Example
+```sh
+javi -n my_app -p ~/Documents/Projects -re # Using React without Ecto
 ```
 
 ### TODO
