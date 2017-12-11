@@ -9,7 +9,7 @@
 ## Installation
 
 ```sh
-\curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/install | bash -s install
+\curl -sSL https://raw.githubusercontent.com/aguxez/javi/master/install | bash -s
 ```
 
 Then add it to your PATH
