@@ -8,11 +8,11 @@ INSTALL="0"
 
 ### Funcs
 
-# This function checks if any of the parameters given are either
-# '--no-brunch' or '--no-html', in this case, the process is cancelled.
+# This function checks if any of the parameters given is
+# '--no-brunch', in this case, the process is cancelled.
 check_arguments() {
-  if [[ "${@}" == "--no-brunch" ]] ; then
-    err "You passed '--no-brunch' or '--no-html' as options, aborting"
+  if [[ "${@}" =~ "--no-brunch" ]] ; then
+    err "You passed '--no-brunch' as option, aborting"
 
     exit 1
   fi
@@ -29,12 +29,16 @@ get_files() {
   get_brunch
   get_scss
 
+  # We're at 'css' folder
   cd ../..
 
   echo "Got and replaced files on 'assets' folder"
 
   # Replaces content from 'app.html.eex' file
   get_apphtml
+
+  # Goes back to root
+  cd ../../../../
 }
 
 get_brunch() {
@@ -54,19 +58,19 @@ get_apphtml() {
   wget https://raw.githubusercontent.com/aguxez/javi/master/app.html.eex
 
   # Here we replace the title with the 'name' variable
-  uppercased_name=`sed -e 's/\b\(.\)/\u\1/g' <<< "${name}"`
-  sed -i -e 's/CHANGE_TITLE/'"${uppercased_name}"'/g' app.html.eex
+  capitalized_name=$(sed -e 's/\b\(.\)/\u\1/g' <<< "${name}")
+  sed -i -e 's/CHANGE_TITLE/'"${capitalized_name}"'/g' app.html.eex
 }
 
 get_react() {
   printf "%b" "Building project with last version of React\n"
-  printf "%b" "Javi will install additional npm dependencies but you have to \n"
-  printf "%b" "Install react_phoenix manually or if you want to use it differently\n\n"
+  printf "%b" "Javi will install additional dependencies\n"
 
   warn "Remember to add the presets on your brunch-config.js file"
 
+  echo $(pwd)
 
-  cd "${name}/assets" && \
+  cd "assets" && \
   yarn add react babel-preset-env babel-preset-react --save && \
   cd ../
 }
@@ -92,6 +96,7 @@ err() {
 }
 
 # getopts
+phoenix_opts=()
 while getopts ":n:p:rebh" opt ; do
   case "${opt}" in
     n)
@@ -103,14 +108,14 @@ while getopts ":n:p:rebh" opt ; do
     r)
       react="1"
       ;;
+    h)
+      phoenix_opts+=("--no-html")
+      ;;
     e)
       phoenix_opts+=("--no-ecto")
       ;;
     b)
       phoenix_opts+=("--no-brunch")
-      ;;
-    h)
-      phoenix_opts+=("--no-html")
       ;;
     \?)
       ;;
@@ -137,21 +142,21 @@ elif [[ -z "${name}" ]] ; then
 
   usage
 elif [[ -d "${path}" ]] ; then
-  check_arguments "${phoenix_opts}"
+  check_arguments "${phoenix_opts[@]}"
 
   echo "Creating project in ${path}/${name}"
 
   mkdir "${path}/${name}" && \
   cd "${path}/${name}" && \
   mix phx.new "${name}" "${phoenix_opts[@]}"
-  # Function
+
   get_files
 else
-  check_arguments "${phoenix_opts}" && \
+  check_arguments "${phoenix_opts[@]}" && \
   # If this 'else' then it means that a path wasn't given
   # arguments starting at the '2' place are the ones passed to Phoenix's options
-  mix phx.new "${name}" "${phoenix_opts}"
-  # Function
+  mix phx.new "${name}" "${phoenix_opts[@]}"
+
   get_files
 fi
 
