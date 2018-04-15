@@ -34,11 +34,13 @@ get_files() {
 
   echo "Got and replaced files on 'assets' folder"
 
-  # Replaces content from 'app.html.eex' file
-  get_apphtml
+  # Replaces content from 'app.html.eex' file if "--no-html" wasn't given
+  if [[ ! "${phoenix_opts[@]}" =~ "--no-html" ]] ; then
+    get_apphtml
 
-  # Goes back to root
-  cd ../../../../
+    # Goes back to root
+    cd ../../../../
+  fi
 }
 
 get_brunch() {
