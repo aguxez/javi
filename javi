@@ -11,7 +11,7 @@ INSTALL="0"
 # This function checks if any of the parameters given are either
 # '--no-brunch' or '--no-html', in this case, the process is cancelled.
 check_arguments() {
-  if [[ "${@}" == "--no-brunch" ]] || [[ "${@}" == "--no-html" ]] ; then
+  if [[ "${@}" == "--no-brunch" ]] ; then
     err "You passed '--no-brunch' or '--no-html' as options, aborting"
 
     exit 1
@@ -59,14 +59,14 @@ get_apphtml() {
 }
 
 get_react() {
-  printf "%b" "Building project with last version of React"
+  printf "%b" "Building project with last version of React\n"
   printf "%b" "Javi will install additional npm dependencies but you have to \n"
   printf "%b" "Install react_phoenix manually or if you want to use it differently\n\n"
 
   warn "Remember to add the presets on your brunch-config.js file"
 
 
-  cd assets && \
+  cd "${name}/assets" && \
   yarn add react babel-preset-env babel-preset-react --save && \
   cd ../
 }
